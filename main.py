@@ -1,16 +1,17 @@
+import uuid
 from collections import defaultdict
 from typing import Optional
 
+import guid
 import sqlglot
 from sqlglot.optimizer import build_scope, traverse_scope
-from sqlglot import exp
+from sqlglot import exp, Schema, MappingSchema
 from sqlglot.optimizer.qualify_columns import qualify_columns
 
+# QUERY = "SELECT a.*, b.column1, b.column2 FROM table_a AS a JOIN table_b AS b ON a.id = b.a_id"
 
-#QUERY = "SELECT a.*, b.column1, b.column2 FROM table_a AS a JOIN table_b AS b ON a.id = b.a_id"
-
-QUERY = '''SELECT 
-    a.*, 
+QUERY = f'''SELECT 
+    a.ALL{uuid.uuid4().hex}, 
     b.column1, 
     b.column2, 
     c.aggregated_column
@@ -31,10 +32,11 @@ WHERE
     b.column2 > (SELECT AVG(d.column3) FROM table_d AS d WHERE d.b_id = b.id)
 '''
 
+q = 'toDecimal(col44, 20) / nullif(toDecimal(col10, 20), 0)'
 
 def parse_statement(sql_query):
-    ast = sqlglot.parse_one(sql_query)
-    ast = qualify_columns(ast, schema=None)
+    ast = sqlglot.parse_one(sql_query, dialect='clickhouse')
+    ast = qualify_columns(ast, schema=MappingSchema().add_table('table_a', ['id', 'id2'], dialect='clickhouse'))
 
     physical_columns = defaultdict(set)
 
@@ -45,9 +47,17 @@ def parse_statement(sql_query):
 
     return physical_columns
 
+def extract_fields_from_formula(formula):
+    table = f'TABLE{uuid.uuid4().hex}'
+    res = parse_statement(f"SELECT {formula} FROM {table}")
+
+    return res[table]
+
+
 def main():
-    res = parse_statement(QUERY)
+    res = extract_fields_from_formula(q)
     print(res)
+
 
 if __name__ == '__main__':
     main()
