@@ -36,7 +36,7 @@ q = 'toDecimal(col44, 20) / nullif(toDecimal(col10, 20), 0)'
 
 def parse_statement(sql_query):
     ast = sqlglot.parse_one(sql_query, dialect='clickhouse')
-    ast = qualify_columns(ast, schema=MappingSchema().add_table('table_a', ['id', 'id2'], dialect='clickhouse'))
+    ast = qualify_columns(ast, schema=None)
 
     physical_columns = defaultdict(set)
 
