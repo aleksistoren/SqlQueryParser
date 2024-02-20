@@ -1,8 +1,7 @@
 import uuid
 from collections import defaultdict
-from typing import Optional
 
-import guid
+
 import sqlglot
 from sqlglot.optimizer import build_scope, traverse_scope
 from sqlglot import exp, Schema, MappingSchema
@@ -34,8 +33,11 @@ WHERE
 
 q = 'toDecimal(col44, 20) / nullif(toDecimal(col10, 20), 0)'
 
+
 def parse_statement(sql_query):
-    ast = sqlglot.parse_one(sql_query, dialect='clickhouse')
+    all_table_name = f'ALL{uuid.uuid4().hex}'
+    updated_query = sql_query.replace('*', all_table_name)
+    ast = sqlglot.parse_one(updated_query, dialect='clickhouse')
     ast = qualify_columns(ast, schema=None)
 
     physical_columns = defaultdict(set)
@@ -45,7 +47,12 @@ def parse_statement(sql_query):
             if isinstance(scope.sources.get(c.table), exp.Table):
                 physical_columns[scope.sources.get(c.table).name].add(c.name)
 
+    for table in list(physical_columns.keys()):
+        if all_table_name in physical_columns[table]:
+            physical_columns[table] = {'*'}
+
     return physical_columns
+
 
 def extract_fields_from_formula(formula):
     table = f'TABLE{uuid.uuid4().hex}'
@@ -56,6 +63,9 @@ def extract_fields_from_formula(formula):
 
 def main():
     res = extract_fields_from_formula(q)
+    print(res)
+
+    res = parse_statement(QUERY)
     print(res)
 
 

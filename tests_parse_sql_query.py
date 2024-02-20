@@ -16,7 +16,7 @@ from main import parse_statement
     ),
     (
         "SELECT COUNT(*), b.name FROM table_b AS b",
-        defaultdict(set, {"table_b": {'name', '*'}})
+        defaultdict(set, {"table_b": {'*'}})
     ),
     (
         "SELECT a.id, a.name FROM table_a AS a WHERE a.id > 10",
