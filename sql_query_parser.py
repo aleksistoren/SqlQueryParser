@@ -1,6 +1,6 @@
 import uuid
 from collections import defaultdict
-from typing import List
+from typing import List, Set
 
 import sqlglot
 from sqlglot.optimizer import build_scope, traverse_scope
@@ -30,7 +30,7 @@ class SqlQueryParser:
         return physical_columns
 
     @classmethod
-    def extract_fields_from_formula(cls, formula):
+    def extract_fields_from_formula(cls, formula: str) -> Set[str]:
         table = f'TABLE{uuid.uuid4().hex}'
         res = cls.parse_statement(f"SELECT {formula} FROM {table}")
 
