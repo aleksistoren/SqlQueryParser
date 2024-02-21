@@ -10,7 +10,7 @@ from sqlglot.optimizer.qualify_columns import qualify_columns
 
 class SqlQueryParser:
     @classmethod
-    def parse_statement(cls, sql_query: str) -> defaultdict[List[str]]:
+    def parse_statement(cls, sql_query: str) -> defaultdict[str, Set[str]]:
         all_table_name = f'ALL{uuid.uuid4().hex}'
         updated_query = sql_query.replace('.*', f'.{all_table_name}')
         ast = sqlglot.parse_one(updated_query, dialect='clickhouse')
